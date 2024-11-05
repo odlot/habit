@@ -2,18 +2,12 @@
 
 import Habit from "./habit";
 import DeleteModal from "./delete-modal";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface HabitData {
     id: number;
     name: string;
 }
-
-const habitsMap = [
-  { id: 0, name: "Exercise" },
-  { id: 1, name: "Read" },
-  { id: 2, name: "Cook" }
-]
 
 export default function HabitTracker() {
     const [habits, setHabits] = useState<HabitData[]>([]);
@@ -21,25 +15,51 @@ export default function HabitTracker() {
     const [isModalOpen, setModalOpen] = useState(false);
     const [habitToDelete, setHabitToDelete] = useState<number | null>(null);
 
-    const confirmDelete = (id: number) => {
-        setHabitToDelete(id);
-        setModalOpen(true);
-    };
+    // Updated URLs to use the Node.js backend
+    async function addHabit() {
+        if (newHabitName.trim() === "") return;
+        
+        const response = await fetch('http://localhost:3001/habits', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: newHabitName })
+        });
+        
+        const newHabit = await response.json();
+        setHabits([...habits, newHabit]);
+        setNewHabitName("");
+    }
 
-    const handleDelete = () => {
+    async function handleDelete() {
         if (habitToDelete !== null) {
+            await fetch(`http://localhost:3001/habits/${habitToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             setHabits(habits.filter(habit => habit.id !== habitToDelete));
             setModalOpen(false);
             setHabitToDelete(null);
         }
-    };
-
-    function addHabit() {
-        if (newHabitName.trim() === "") return;
-        const newHabit: HabitData = { id: Date.now(), name: newHabitName };
-        setHabits([...habits, newHabit]);
-        setNewHabitName("");
     }
+
+    // Load habits from the database on component mount
+    useEffect(() => {
+        async function loadHabits() {
+            const response = await fetch('http://localhost:3001/habits');
+            const data = await response.json();
+            setHabits(data);
+        }
+        loadHabits();
+    }, []);
+
+    const confirmDelete = (id: number) => {
+        setHabitToDelete(id);
+        setModalOpen(true);
+    };
 
     return (
         <div>
