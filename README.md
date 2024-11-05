@@ -4,6 +4,8 @@
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app) in which you can track your habits.
 
+The backend is using `express` and can be found under `backend/`.
+
 ## Getting Started
 
 First, run the development server:
